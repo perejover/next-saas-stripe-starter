@@ -1,27 +1,29 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const isDev = process.env.NODE_ENV === "development";
+const stringSchema = isDev ? z.string().optional() : z.string().min(1);
+const urlSchema = isDev ? z.string().url().optional() : z.string().url().min(1);
+
 export const env = createEnv({
   server: {
-    // This is optional because it's only used in development.
-    // See https://next-auth.js.org/deployment.
-    NEXTAUTH_URL: z.string().url().optional(),
-    AUTH_SECRET: z.string().min(1),
-    GOOGLE_CLIENT_ID: z.string().min(1),
-    GOOGLE_CLIENT_SECRET: z.string().min(1),
-    GITHUB_OAUTH_TOKEN: z.string().min(1),
-    DATABASE_URL: z.string().min(1),
-    RESEND_API_KEY: z.string().min(1),
-    EMAIL_FROM: z.string().min(1),
-    STRIPE_API_KEY: z.string().min(1),
-    STRIPE_WEBHOOK_SECRET: z.string().min(1),
+    NEXTAUTH_URL: urlSchema,
+    AUTH_SECRET: stringSchema,
+    GOOGLE_CLIENT_ID: stringSchema,
+    GOOGLE_CLIENT_SECRET: stringSchema,
+    GITHUB_OAUTH_TOKEN: stringSchema,
+    DATABASE_URL: stringSchema,
+    RESEND_API_KEY: stringSchema,
+    EMAIL_FROM: stringSchema,
+    STRIPE_API_KEY: stringSchema,
+    STRIPE_WEBHOOK_SECRET: stringSchema,
   },
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().min(1),
-    NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PLAN_ID: z.string().min(1),
-    NEXT_PUBLIC_STRIPE_PRO_YEARLY_PLAN_ID: z.string().min(1),
-    NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PLAN_ID: z.string().min(1),
-    NEXT_PUBLIC_STRIPE_BUSINESS_YEARLY_PLAN_ID: z.string().min(1),
+    NEXT_PUBLIC_APP_URL: stringSchema,
+    NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PLAN_ID: stringSchema,
+    NEXT_PUBLIC_STRIPE_PRO_YEARLY_PLAN_ID: stringSchema,
+    NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PLAN_ID: stringSchema,
+    NEXT_PUBLIC_STRIPE_BUSINESS_YEARLY_PLAN_ID: stringSchema,
   },
   runtimeEnv: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,

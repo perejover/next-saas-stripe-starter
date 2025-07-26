@@ -73,5 +73,22 @@ export async function POST(req: Request) {
     }
   }
 
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object as Stripe.Subscription;
+
+    // Buscar el usuario por stripeSubscriptionId y limpiar los datos de Stripe
+    await prisma.user.update({
+      where: {
+        stripeSubscriptionId: subscription.id,
+      },
+      data: {
+        stripeSubscriptionId: null,
+        // stripeCustomerId: NO TOCAR
+        stripePriceId: null,
+        stripeCurrentPeriodEnd: null,
+      },
+    });
+  }
+
   return new Response(null, { status: 200 });
 }

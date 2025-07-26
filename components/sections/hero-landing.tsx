@@ -1,93 +1,86 @@
-import Link from "next/link";
+'use client';
 
-import { env } from "@/env.mjs";
-import { siteConfig } from "@/config/site";
-import { cn, nFormatter } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
-import { Icons } from "@/components/shared/icons";
+import React, { useState, useContext } from "react";
+import { ModalContext } from "@/components/modals/providers";
 
-export default async function HeroLanding() {
-  const { stargazers_count: stars } = await fetch(
-    "https://api.github.com/repos/mickasmt/next-saas-stripe-starter",
-    {
-      ...(env.GITHUB_OAUTH_TOKEN && {
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_OAUTH_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      }),
-      // data will revalidate every hour
-      next: { revalidate: 3600 },
-    },
-  )
-    .then((res) => res.json())
-    .catch((e) => console.log(e));
+interface HeroLandingProps {
+  isPaid?: boolean;
+}
+
+export default function HeroLanding({ isPaid = false }: HeroLandingProps) {
+  const [input, setInput] = useState("");
+  const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { setBillingModal } = useContext(ModalContext);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleHumanize = async () => {
+    // If user is not paid, show billing modal instead of processing
+    if (!isPaid) {
+      setBillingModal(true);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setOutput("");
+    try {
+      const res = await fetch("/api/humanize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: input }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setOutput(data.humanized);
+      } else {
+        setError(data.error || "An error occurred.");
+      }
+    } catch (err) {
+      setError("An error occurred while connecting to the server.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <section className="space-y-6 py-12 sm:py-20 lg:py-20">
-      <div className="container flex max-w-5xl flex-col items-center gap-5 text-center">
-        <Link
-          href="https://twitter.com/miickasmt/status/1810465801649938857"
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm", rounded: "full" }),
-            "px-4",
-          )}
-          target="_blank"
-        >
-          <span className="mr-3">🎉</span>
-          <span className="hidden md:flex">Introducing&nbsp;</span> Next Auth
-          Roles Template on <Icons.twitter className="ml-2 size-3.5" />
-        </Link>
-
-        <h1 className="text-balance font-urban text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-[66px]">
-          Kick off with a bang with{" "}
-          <span className="text-gradient_indigo-purple font-extrabold">
-            SaaS Starter
-          </span>
-        </h1>
-
-        <p
-          className="max-w-2xl text-balance leading-normal text-muted-foreground sm:text-xl sm:leading-8"
-          style={{ animationDelay: "0.35s", animationFillMode: "forwards" }}
-        >
-          Build your next project using Next.js 14, Prisma, Neon, Auth.js v5,
-          Resend, React Email, Shadcn/ui, Stripe.
-        </p>
-
-        <div
-          className="flex justify-center space-x-2 md:space-x-4"
-          style={{ animationDelay: "0.4s", animationFillMode: "forwards" }}
-        >
-          <Link
-            href="/pricing"
-            prefetch={true}
-            className={cn(
-              buttonVariants({ size: "lg", rounded: "full" }),
-              "gap-2",
-            )}
+    <section className="flex flex-col items-center justify-center min-h-[60vh] gap-8 p-8">
+      <h1 className="text-2xl font-bold mb-4">Text Humanizer</h1>
+      <div className="flex flex-col md:flex-row gap-6 w-full max-w-3xl">
+        <div className="flex-1 flex flex-col">
+          <label htmlFor="input" className="mb-2 font-medium">Original Text</label>
+          <textarea
+            id="input"
+            className="border rounded p-2 min-h-[120px] resize-vertical"
+            value={input}
+            onChange={handleInputChange}
+            placeholder="Type your text here..."
+          />
+        </div>
+        <div className="flex flex-col items-center justify-center md:justify-end md:items-start md:mt-8">
+          <button
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded shadow mb-4 md:mb-0 disabled:opacity-50"
+            onClick={handleHumanize}
+            type="button"
+            disabled={loading || !input.trim()}
           >
-            <span>Go Pricing</span>
-            <Icons.arrowRight className="size-4" />
-          </Link>
-          <Link
-            href={siteConfig.links.github}
-            target="_blank"
-            rel="noreferrer"
-            className={cn(
-              buttonVariants({
-                variant: "outline",
-                size: "lg",
-                rounded: "full",
-              }),
-              "px-5",
-            )}
-          >
-            <Icons.gitHub className="mr-2 size-4" />
-            <p>
-              <span className="hidden sm:inline-block">Star on</span> GitHub{" "}
-              <span className="font-semibold">{nFormatter(stars)}</span>
-            </p>
-          </Link>
+            {loading ? "Humanizing..." : isPaid ? "Humanize" : "Upgrade to Humanize"}
+          </button>
+          {error && <p className="text-red-600 mt-2">{error}</p>}
+        </div>
+        <div className="flex-1 flex flex-col">
+          <label htmlFor="output" className="mb-2 font-medium">Humanized Text</label>
+          <textarea
+            id="output"
+            className="border rounded p-2 min-h-[120px] bg-gray-100 resize-vertical"
+            value={output}
+            readOnly
+            placeholder="The humanized text will appear here..."
+          />
         </div>
       </div>
     </section>

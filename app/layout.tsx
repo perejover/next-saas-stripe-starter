@@ -9,6 +9,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@/components/analytics";
 import ModalProvider from "@/components/modals/providers";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
+import { getUserSubscriptionPlan } from "@/lib/subscription";
+import { getCurrentUser } from "@/lib/session";
+
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -16,8 +19,21 @@ interface RootLayoutProps {
 
 export const metadata = constructMetadata();
 
-export default function RootLayout({ children }: RootLayoutProps) {
+
+
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const user = await getCurrentUser();
+
+
+  let subscriptionPlan;
+  if (user && user.id) {
+    subscriptionPlan = await getUserSubscriptionPlan(user.id);
+  }
+
+
   return (
+
+
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
@@ -36,7 +52,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             enableSystem
             disableTransitionOnChange
           >
-            <ModalProvider>{children}</ModalProvider>
+            <ModalProvider subscriptionPlan={subscriptionPlan}>{children}</ModalProvider>
             <Analytics />
             <Toaster richColors closeButton />
             <TailwindIndicator />

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LayoutDashboard, Lock, LogOut, Settings } from "lucide-react";
+import { CreditCard, LayoutDashboard, Lock, LogOut, Settings } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { Drawer } from "vaul";
+import { Drawer } from "vaul"; import { Button } from "@/components/ui/button";
+
 
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
@@ -16,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
-export function UserAccountNav() {
+export function UserAccountNav({ setBillingModal }: { setBillingModal: (open: boolean) => void }) {
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -76,7 +77,7 @@ export function UserAccountNav() {
                 </li>
               ) : null}
 
-              <li className="rounded-lg text-foreground hover:bg-muted">
+              {/* <li className="rounded-lg text-foreground hover:bg-muted">
                 <Link
                   href="/dashboard"
                   onClick={closeDrawer}
@@ -96,7 +97,22 @@ export function UserAccountNav() {
                   <Settings className="size-4" />
                   <p className="text-sm">Settings</p>
                 </Link>
+              </li> */}
+
+              <li className="rounded-lg text-foreground hover:bg-muted">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    setBillingModal(true);
+                  }}
+                  className="flex w-full items-center gap-3 px-2.5 py-2"
+                >
+                  <CreditCard className="size-4" />
+                  <p className="text-sm">Billing</p>
+                </button>
               </li>
+
 
               <li
                 className="rounded-lg text-foreground hover:bg-muted"
@@ -150,7 +166,7 @@ export function UserAccountNav() {
           </DropdownMenuItem>
         ) : null}
 
-        <DropdownMenuItem asChild>
+        {/* <DropdownMenuItem asChild>
           <Link href="/dashboard" className="flex items-center space-x-2.5">
             <LayoutDashboard className="size-4" />
             <p className="text-sm">Dashboard</p>
@@ -165,7 +181,21 @@ export function UserAccountNav() {
             <Settings className="size-4" />
             <p className="text-sm">Settings</p>
           </Link>
+        </DropdownMenuItem> */}
+
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onSelect={(event) => {
+            event.preventDefault();
+            setBillingModal(true);
+          }}
+        >
+          <div className="flex items-center space-x-2.5">
+            <CreditCard className="size-4" />
+            <p className="text-sm">Billing</p>
+          </div>
         </DropdownMenuItem>
+
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"

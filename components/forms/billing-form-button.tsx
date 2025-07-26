@@ -28,8 +28,8 @@ export function BillingFormButton({
     startTransition(async () => await generateUserStripeSession());
 
   const userOffer =
-    subscriptionPlan.stripePriceId ===
-    offer.stripeIds[year ? "yearly" : "monthly"];
+    subscriptionPlan.isPaid &&
+    subscriptionPlan.stripePriceId === offer.stripeIds[year ? "yearly" : "monthly"];
 
   return (
     <Button
